@@ -1,12 +1,21 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<time.h>
+#include<string.h>
 #include<unistd.h>
 #include<sys/time.h>
 #include<sys/select.h>
 #include<termios.h>
 #include<fcntl.h>
  
+ #define RED     "\x1b[31m"
+#define GREEN   "\x1b[32m"
+#define YELLOW  "\x1b[33m"
+#define BLUE    "\x1b[34m"
+#define MAGENTA "\x1b[35m"
+#define CYAN    "\x1b[36m"
+#define RESET   "\x1b[0m" // Reset to default color
+
 void draw(int i, int j, char *ptr,char arr[30][60]) 
 {
     if (i <= 29) 
@@ -100,6 +109,7 @@ int w(char arr[30][60],int *start_x,int *start_y,int *end_x,int *end_y,int *scor
         arr[*start_x-1][*start_y]='0';
         *start_x=*start_x-1;
         if((arr[*end_x][*end_y-1]=='0'&& arr[*end_x+1][*end_y]=='0')||(arr[*end_x][*end_y+1]=='0'&&arr[*end_x+1][*end_y]=='0')) *end_x=*end_x+1;
+        else if((arr[*end_x][*end_y-1]=='0'&& arr[*end_x+1][*end_y]=='0' && arr[*end_x][*end_y+1])||(arr[*end_x][*end_y+1]=='0'&&arr[*end_x+1][*end_y]=='0'));
         else if(arr[*end_x][*end_y+1]=='0') *end_y=*end_y+1;
         else if(arr[*end_x][*end_y-1]=='0') *end_y=*end_y-1;
         else if(arr[*end_x+1][*end_y]=='0') *end_x=*end_x+1;
@@ -259,63 +269,91 @@ void play(char c,int *start_x,int *start_y,int *end_x,int *end_y,int *score,char
 
         else
         {
-            if(c=='a')
-            {
-                cont=d(arr, start_x,start_y,end_x,end_y,score);
-            }
-            else if(c=='d')
+            if(temp=='a')
             {
                 cont=a(arr, start_x,start_y,end_x,end_y,score);
             }
-            else if(c=='s')
+            else if(temp=='d')
             {
-                cont=w(arr, start_x,start_y,end_x,end_y,score);
+                cont=d(arr, start_x,start_y,end_x,end_y,score);
             }
-            else if(c=='w')
+            else if(temp=='s')
             {
                 cont=s(arr, start_x,start_y,end_x,end_y,score);
+            }
+            else if(temp=='w')
+            {
+                cont=w(arr, start_x,start_y,end_x,end_y,score);
             }
             else
             {
                 continue;
             }
         }
-        if(c=='w'||c=='s')
+        if(temp=='w'||temp=='s')
         {
-            usleep(100000);
+            usleep(300000);
         }
-        else if(c=='a'|| c=='d')
+        else if(temp=='a'|| temp=='d')
         {
-            usleep(50000);
+            usleep(150000);
         }
         system("clear");
         print(arr,score);
-        temp=c;
+        if((c=='w'&&temp!='s')||(c=='a'&&temp!='d')||(c=='s'&&temp!='w')||(c=='d'&&temp!='a'))
+        {
+            temp=c;
+        }
+    }
+}
+void enter()
+{
+    char arr[]="WELCOME TO THE GAME..";
+    for(int i=0;i<strlen(arr);i++)
+    {
+        printf(YELLOW"%c"RESET,arr[i]);
+        fflush(stdout);
+        usleep(300000);
     }
 }
 int main()
 {
-    char arr[30][60];
-    draw(0,0,&arr[0][0],arr);
-    int g1=generate(29);
-    int g2=generate(59);
-    arr[g1][g2]='x';
-    if(g1==15 && g2==30)
+    char t='y';
+    while(t=='y')
     {
-        arr[g1][g2]=' ';
+        char arr[30][60];
+        enter();
+        draw(0,0,&arr[0][0],arr);
         int g1=generate(29);
         int g2=generate(59);
         arr[g1][g2]='x';
-    }
-    arr[15][30]='0';
-    int score=0;
-    print(arr,&score);
-    int start_x=15;
-    int start_y=30;
-    int end_x=15;
-    int end_y=30;
-    char c=' ';
-    play(c,&start_x,&start_y,&end_x,&end_y, &score,arr);
-    printf("GAME OVER...\n");
-    printf("Your Score is : %d",score);   
+        if(g1==15 && g2==30)
+        {
+            arr[g1][g2]=' ';
+            int g1=generate(29);
+            int g2=generate(59);
+            arr[g1][g2]='x';
+        }
+        arr[15][30]='0';
+        int score=0;
+        print(arr,&score);
+        int start_x=15;
+        int start_y=30;
+        int end_x=15;
+        int end_y=30;
+        char c=' ';
+        play(c,&start_x,&start_y,&end_x,&end_y, &score,arr);
+        system("clear");
+        printf(YELLOW "GAME OVER... \n" RESET);
+        printf(YELLOW "Your Score is : %d\n\n" RESET,score); 
+        printf(GREEN "To play again press  y\n"RESET);
+        printf(RED "To quit press n\n"RESET);
+        char te=getchar();
+        t=te;
+        if(te=='n')
+        {
+            break;
+        }
+        system("clear");
+    }  
 }
