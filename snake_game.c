@@ -441,8 +441,8 @@ void help()
     printf("4. The snake should be moved with the  boundaries drawn.\n");
     printf("5. The game gets over when the snake either hits its own body or it hits the boundary\n");
     printf("6. To eat the fruit, move over the fruit . The length of the snake gets increased by 1 unit.\n\n");
-    printf("7. To change the map, go to the maps option. There are 3 maps available")
-    printf("8. To increase the speed go to speed option and increase it or decrease it ")
+    printf("7. To change the map, go to the maps option. There are 3 maps available");
+    printf("8. To increase the speed go to speed option and increase it or decrease it ");
     printf("   ...press any key and enter to go back\n");
     char c=getchar();
 }
