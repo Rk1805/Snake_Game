@@ -50,7 +50,51 @@ void draw(int i, int j, char *ptr,char arr[30][60])
         }
     }
 }
+void compartment(char arr[30][60])
+{
+    draw(0,0,&arr[0][0],arr);
+    for(int i=8;i<10;i++)
+    {
+        for(int j=9;j<50;j++)
+        {
+            arr[i][j]='-';
+        }
+    }
+    for(int i=18;i<20;i++)
+    {
+        for(int j=9;j<50;j++)
+        {
+            arr[i][j]='-';
+        }
+    }
+}
 
+void apartment(char arr[30][60])
+{
+    draw(0,0,&arr[0][0],arr);
+    for(int i=1;i<29;i++)
+    {
+        if(i!=10 && i!=11 && i!=12 && i!=18)
+        {
+            arr[i][20]='|';
+        }
+    }
+    for(int j=1;j<20;j++)
+    {
+        arr[15][j]='-';
+    }
+    for(int i=1;i<29;i++)
+    {
+        if(i!=3 && i!=19 && i!=20)
+        {
+            arr[i][45]='|';
+        }
+    }
+    for(int j=46;j<59;j++)
+    {
+        arr[10][j]='-';
+    }
+}
 int generate(int number)
 {
     srand(time(NULL));
@@ -85,17 +129,17 @@ int kbhit() {
     return 0;
 }
 
-int w(char arr[30][60],int *start_x,int *start_y,int *end_x,int *end_y,int *score)
+int w(char arr[30][60],int *start_x,int *start_y,int *end_x,int *end_y,int *score,int *sp)
 {
     arr[*end_x][*end_y]=' ';
     if(arr[*start_x-1][*start_y]=='x')
     {
         arr[*start_x-1][*start_y]='0';
         *start_x=*start_x-1;
-        *score+=5;
+        *score+=2*(*sp);
         int g1=generate(29);
         int g2=generate(59);
-        while(arr[g1][g2]=='0')
+        while(arr[g1][g2]=='0' || arr[g1][g2]=='|' || arr[g1][g2]=='-')
         {
             g1=generate(29);
             g2=generate(59);
@@ -122,17 +166,17 @@ int w(char arr[30][60],int *start_x,int *start_y,int *end_x,int *end_y,int *scor
     }
 }
 
-int a(char arr[30][60],int *start_x,int *start_y,int *end_x,int *end_y,int *score)
+int a(char arr[30][60],int *start_x,int *start_y,int *end_x,int *end_y,int *score,int *sp)
 {
     arr[*end_x][*end_y]=' ';
     if(arr[*start_x][*start_y-1]=='x')
     {
         arr[*start_x][*start_y-1]='0';
         *start_y=*start_y-1;
-        *score+=5;
+        *score+=2*(*sp);
         int g1=generate(29);
         int g2=generate(59);
-        while(arr[g1][g2]=='0')
+        while(arr[g1][g2]=='0' || arr[g1][g2]=='|' || arr[g1][g2]=='-')
         {
             g1=generate(29);
             g2=generate(59);
@@ -157,17 +201,17 @@ int a(char arr[30][60],int *start_x,int *start_y,int *end_x,int *end_y,int *scor
     }
 }
 
-int s(char arr[30][60],int *start_x,int *start_y,int *end_x,int *end_y,int *score)
+int s(char arr[30][60],int *start_x,int *start_y,int *end_x,int *end_y,int *score,int *sp)
 {
     arr[*end_x][*end_y]=' ';
     if(arr[*start_x+1][*start_y]=='x')
     {
         arr[*start_x+1][*start_y]='0';
         *start_x=*start_x+1;
-        *score+=5;
+        *score+=2*(*sp);
         int g1=generate(29);
         int g2=generate(59);
-        while(arr[g1][g2]=='0')
+        while(arr[g1][g2]=='0' || arr[g1][g2]=='|' || arr[g1][g2]=='-')
         {
             g1=generate(29);
             g2=generate(59);
@@ -192,17 +236,17 @@ int s(char arr[30][60],int *start_x,int *start_y,int *end_x,int *end_y,int *scor
     }
 }
 
-int d(char arr[30][60],int *start_x,int *start_y,int *end_x,int *end_y,int *score)
+int d(char arr[30][60],int *start_x,int *start_y,int *end_x,int *end_y,int *score,int *sp)
 {
     arr[*end_x][*end_y]=' ';
     if(arr[*start_x][*start_y+1]=='x')
     {
         arr[*start_x][*start_y+1]='0';
         *start_y=*start_y+1;
-        *score+=5;
+        *score+=2*(*sp);
         int g1=generate(29);
         int g2=generate(59);
-        while(arr[g1][g2]=='0')
+        while(arr[g1][g2]=='0' || arr[g1][g2]=='|' || arr[g1][g2]=='-')
         {
             g1=generate(29);
             g2=generate(59);
@@ -240,7 +284,7 @@ void print(char arr[30][60],int *score)
     printf("Score : %d\n",*score);
 }
 
-void play(char c,int *start_x,int *start_y,int *end_x,int *end_y,int *score,char arr[30][60])
+void play(char c,int *start_x,int *start_y,int *end_x,int *end_y,int *score,char arr[30][60],int *sp)
 {
     char temp=c;
     int cont=1;
@@ -252,38 +296,38 @@ void play(char c,int *start_x,int *start_y,int *end_x,int *end_y,int *score,char
         }
         if(c=='w' && temp!='s' )
         {
-                cont=w(arr, start_x,start_y,end_x,end_y,score);
+                cont=w(arr, start_x,start_y,end_x,end_y,score,sp);
         }
         else if(c=='s' && temp!='w')
         {
-                cont=s(arr, start_x,start_y,end_x,end_y,score);
+                cont=s(arr, start_x,start_y,end_x,end_y,score,sp);
         }
         else if(c=='a' && temp!='d')
         {
-                cont=a(arr, start_x,start_y,end_x,end_y,score);
+                cont=a(arr, start_x,start_y,end_x,end_y,score,sp);
         }
         else if(c=='d' && temp!='a')
         {
-                cont=d(arr, start_x,start_y,end_x,end_y,score);
+                cont=d(arr, start_x,start_y,end_x,end_y,score,sp);
         }
 
         else
         {
             if(temp=='a')
             {
-                cont=a(arr, start_x,start_y,end_x,end_y,score);
+                cont=a(arr, start_x,start_y,end_x,end_y,score,sp);
             }
             else if(temp=='d')
             {
-                cont=d(arr, start_x,start_y,end_x,end_y,score);
+                cont=d(arr, start_x,start_y,end_x,end_y,score,sp);
             }
             else if(temp=='s')
             {
-                cont=s(arr, start_x,start_y,end_x,end_y,score);
+                cont=s(arr, start_x,start_y,end_x,end_y,score,sp);
             }
             else if(temp=='w')
             {
-                cont=w(arr, start_x,start_y,end_x,end_y,score);
+                cont=w(arr, start_x,start_y,end_x,end_y,score,sp);
             }
             else
             {
@@ -292,11 +336,11 @@ void play(char c,int *start_x,int *start_y,int *end_x,int *end_y,int *score,char
         }
         if(temp=='w'||temp=='s')
         {
-            usleep(300000);
+            usleep(600000/(*sp));
         }
         else if(temp=='a'|| temp=='d')
         {
-            usleep(150000);
+            usleep(300000/(*sp));
         }
         system("clear");
         print(arr,score);
@@ -308,22 +352,128 @@ void play(char c,int *start_x,int *start_y,int *end_x,int *end_y,int *score,char
 }
 void enter()
 {
+    system("clear");
     char arr[]="WELCOME TO THE GAME..";
+    printf("\t\t\t\t");
     for(int i=0;i<strlen(arr);i++)
     {
         printf(YELLOW"%c"RESET,arr[i]);
         fflush(stdout);
-        usleep(300000);
+        usleep(150000);
     }
+    printf("\n");
+    system("clear");
+}
+void start()
+{
+    printf("1. NEW GAME\n2. MAPS\n3. SPEED\n4. HIGH SCORES\n5. HELP\n6. QUIT\n");
+}
+void map(char arr[30][60],int *m)
+{
+    char ch;
+    while(1)
+    {
+        system("clear");
+        if(*m==1)
+        {
+            printf("1. Classic Box\n2. Compartment\n3. Apartment\n4. Back\n\ncurrent map: Classic Box\n");
+        }
+        else if(*m==2)
+        {
+            printf("1. Classic Box\n2. Compartment\n3. Apartment\n4. Back\n\ncurrent map: Compartment\n");
+        }
+        else if(*m==3)
+        {
+            printf("1. Classic Box\n2. Compartment\n3. Apartment\n4. Back\n\ncurrent map: Apartment\n");
+        }
+        ch=getchar();
+        if(ch=='1')
+        {
+            draw(0,0,&arr[0][0],arr);
+            *m=1;
+        }
+        else if(ch=='2')
+        {
+            compartment(arr);
+            *m=2;
+        }
+        else if(ch=='3')
+        {
+            apartment(arr);
+            *m=3;
+        }
+        else if(ch=='4')
+        {
+            break;
+        }
+    }
+}
+void speedchange(int *speed)
+{
+    char c;
+    while(1)
+    {
+        printf("Speed: %d\nincrease: i \t decrease: d \t back : b\n",*speed);
+        c=getchar();
+        if(c=='i')
+        {
+            *speed+=1;
+        }
+        else if(c=='d')
+        {
+            *speed-=1;
+        }
+        else if(c=='b')
+        {
+            system("clear");
+            break;
+        }
+        system("clear");
+    }
+    system("clear");
+}
+void help()
+{
+    printf("This game contains several maps.\n Your aim should be to collect as many fruits as possible until the game is over.\n");
+    printf("1. The movements of the snake is caused by pressing  the keys w,s,a,d\n");
+    printf("2. Pressing any other key will not cause any change in motion\n");
+    printf("3. When the snake is  moving, you cannot change the motion of the snake directly in the opposite direction.\n  You need to moving in either of the remianing direction and then move backwards\n");
+    printf("4. The snake should be moved with the  boundaries drawn.\n");
+    printf("5. The game gets over when the snake either hits its own body or it hits the boundary\n");
+    printf("6. To eat the fruit, move over the fruit . The length of the snake gets increased by 1 unit.\n\n");
+    printf("7. To change the map, go to the maps option. There are 3 maps available")
+    printf("8. To increase the speed go to speed option and increase it or decrease it ")
+    printf("   ...press any key and enter to go back\n");
+    char c=getchar();
 }
 int main()
 {
+    int m=1;
+    int speed=2;
+    int i=0;
     char t='y';
     while(t=='y')
     {
         char arr[30][60];
-        enter();
-        draw(0,0,&arr[0][0],arr);
+        if(i==0)
+        {
+            enter();
+        }
+        start();
+        char ch=getchar();
+        fflush(stdin);
+        if(m==1)
+        {
+            draw(0,0,&arr[0][0],arr);
+        }
+        else if(m==2)
+        {
+            compartment(arr);
+        }
+        else if(m==3)
+        {
+            apartment(arr);
+        }
         int g1=generate(29);
         int g2=generate(59);
         arr[g1][g2]='x';
@@ -336,24 +486,39 @@ int main()
         }
         arr[15][30]='0';
         int score=0;
-        print(arr,&score);
         int start_x=15;
         int start_y=30;
         int end_x=15;
         int end_y=30;
         char c=' ';
-        play(c,&start_x,&start_y,&end_x,&end_y, &score,arr);
         system("clear");
-        printf(YELLOW "GAME OVER... \n" RESET);
-        printf(YELLOW "Your Score is : %d\n\n" RESET,score); 
-        printf(GREEN "To play again press  y\n"RESET);
-        printf(RED "To quit press n\n"RESET);
-        char te=getchar();
-        t=te;
-        if(te=='n')
+        if(ch=='1')
+        {
+            print(arr,&score);
+            play(c,&start_x,&start_y,&end_x,&end_y, &score,arr,&speed);
+            system("clear");
+            printf(YELLOW "GAME OVER... \n" RESET);
+            printf(YELLOW "Your Score is : %d\n\n" RESET,score); 
+            usleep(3000000);
+            system("clear");
+        }
+        else if(ch=='2')
+        {
+            map(arr,&m);
+        }
+        else if(ch=='3')
+        {
+            speedchange(&speed);
+        }
+        else if(ch=='5')
+        {
+            help();
+        }
+        else if(ch=='6')
         {
             break;
         }
+        i++;
         system("clear");
     }  
 }
