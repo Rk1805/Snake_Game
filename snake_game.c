@@ -8,7 +8,12 @@
 #include<termios.h>
 #include<fcntl.h>
  
- #define RED     "\x1b[31m"
+struct body{
+    int x;
+    int y;
+    struct body* next;
+};
+#define RED     "\x1b[31m"
 #define GREEN   "\x1b[32m"
 #define YELLOW  "\x1b[33m"
 #define BLUE    "\x1b[34m"
@@ -57,14 +62,14 @@ void compartment(char arr[30][60])
     {
         for(int j=9;j<50;j++)
         {
-            arr[i][j]='-';
+            arr[i][j]='*';
         }
     }
     for(int i=18;i<20;i++)
     {
         for(int j=9;j<50;j++)
         {
-            arr[i][j]='-';
+            arr[i][j]='*';
         }
     }
 }
@@ -74,25 +79,25 @@ void apartment(char arr[30][60])
     draw(0,0,&arr[0][0],arr);
     for(int i=1;i<29;i++)
     {
-        if(i!=10 && i!=11 && i!=12 && i!=18)
+        if(i!=10 && i!=11 && i!=12)
         {
-            arr[i][20]='|';
+            arr[i][20]='*';
         }
     }
     for(int j=1;j<20;j++)
     {
-        arr[15][j]='-';
+        arr[15][j]='*';
     }
     for(int i=1;i<29;i++)
     {
-        if(i!=3 && i!=19 && i!=20)
+        if(i!=11 && i!=12)
         {
-            arr[i][45]='|';
+            arr[i][45]='*';
         }
     }
     for(int j=46;j<59;j++)
     {
-        arr[10][j]='-';
+        arr[10][j]='*';
     }
 }
 int generate(int number)
@@ -129,17 +134,25 @@ int kbhit() {
     return 0;
 }
 
-int w(char arr[30][60],int *start_x,int *start_y,int *end_x,int *end_y,int *score,int *sp)
+int w(char arr[30][60],int *score,int *sp,struct body* tail)
 {
-    arr[*end_x][*end_y]=' ';
-    if(arr[*start_x-1][*start_y]=='x')
+    struct body *current=tail;
+    while(current->next!=NULL)
     {
-        arr[*start_x-1][*start_y]='0';
-        *start_x=*start_x-1;
+        current=current->next;
+    }
+    if(arr[current->x-1][current->y]=='x')
+    {
+        struct body *t=(struct body*)malloc(sizeof(struct body));
+        t->x=current->x-1;
+        t->y=current->y;
+        t->next=NULL;
+        current->next=t;
+        arr[t->x][t->y]='0';
         *score+=2*(*sp);
         int g1=generate(29);
         int g2=generate(59);
-        while(arr[g1][g2]=='0' || arr[g1][g2]=='|' || arr[g1][g2]=='-')
+        while(arr[g1][g2]=='0' || arr[g1][g2]=='*')
         {
             g1=generate(29);
             g2=generate(59);
@@ -148,16 +161,34 @@ int w(char arr[30][60],int *start_x,int *start_y,int *end_x,int *end_y,int *scor
         return 1;
     }
 
-    else if(arr[*start_x-1][*start_y]!='|' && arr[*start_x-1][*start_y]!='-' && arr[*start_x-1][*start_y]!='0')
+    else if(arr[current->x-1][current->y]!='*' && arr[current->x-1][current->y]!='0')
     {
-        arr[*start_x-1][*start_y]='0';
-        *start_x=*start_x-1;
-        if((arr[*end_x][*end_y-1]=='0'&& arr[*end_x+1][*end_y]=='0')||(arr[*end_x][*end_y+1]=='0'&&arr[*end_x+1][*end_y]=='0')) *end_x=*end_x+1;
-        else if((arr[*end_x][*end_y-1]=='0'&& arr[*end_x+1][*end_y]=='0' && arr[*end_x][*end_y+1])||(arr[*end_x][*end_y+1]=='0'&&arr[*end_x+1][*end_y]=='0'));
-        else if(arr[*end_x][*end_y+1]=='0') *end_y=*end_y+1;
-        else if(arr[*end_x][*end_y-1]=='0') *end_y=*end_y-1;
-        else if(arr[*end_x+1][*end_y]=='0') *end_x=*end_x+1;
-        else *end_x=*end_x-1;
+        if(arr[current->x-1][current->y]=='-')
+        {
+            struct body *tmp=tail;
+            arr[tail->x][tail->y]=' ';
+            while(tmp->next!=NULL)
+            {
+                tmp->x=tmp->next->x;
+                tmp->y=tmp->next->y;
+                tmp=tmp->next;
+            }
+            tmp->x=28;
+            arr[tmp->x][tmp->y]='0';
+        }
+        else
+        {
+            struct body *tmp=tail;
+            arr[tail->x][tail->y]=' ';
+            while(tmp->next!=NULL)
+            {
+                tmp->x=tmp->next->x;
+                tmp->y=tmp->next->y;
+                tmp=tmp->next;
+            }
+            tmp->x=tmp->x-1;
+            arr[tmp->x][tmp->y]='0';
+        }
         return 1;
     }
     else            
@@ -166,17 +197,25 @@ int w(char arr[30][60],int *start_x,int *start_y,int *end_x,int *end_y,int *scor
     }
 }
 
-int a(char arr[30][60],int *start_x,int *start_y,int *end_x,int *end_y,int *score,int *sp)
+int a(char arr[30][60],int *score,int *sp,struct body* tail)
 {
-    arr[*end_x][*end_y]=' ';
-    if(arr[*start_x][*start_y-1]=='x')
+    struct body *current=tail;
+    while(current->next!=NULL)
     {
-        arr[*start_x][*start_y-1]='0';
-        *start_y=*start_y-1;
+        current=current->next;
+    }
+    if(arr[current->x][current->y-1]=='x')
+    {
+        struct body *t=(struct body*)malloc(sizeof(struct body));
+        t->x=current->x;
+        t->y=current->y-1;
+        t->next=NULL;
+        current->next=t;
+        arr[t->x][t->y]='0';
         *score+=2*(*sp);
         int g1=generate(29);
         int g2=generate(59);
-        while(arr[g1][g2]=='0' || arr[g1][g2]=='|' || arr[g1][g2]=='-')
+        while(arr[g1][g2]=='0' || arr[g1][g2]=='*')
         {
             g1=generate(29);
             g2=generate(59);
@@ -184,34 +223,62 @@ int a(char arr[30][60],int *start_x,int *start_y,int *end_x,int *end_y,int *scor
         arr[g1][g2]='x';
         return 1;
     }
-    else if(arr[*start_x][*start_y-1]!='|' && arr[*start_x][*start_y-1]!='-' && arr[*start_x][*start_y-1]!='0')
+
+    else if(arr[current->x][current->y-1]!='*' && arr[current->x][current->y-1]!='0')
     {
-        arr[*start_x][*start_y-1]='0';
-        *start_y=*start_y-1;
-        if((arr[*end_x+1][*end_y]=='0'&& arr[*end_x][*end_y+1]=='0')||(arr[*end_x+1][*end_y]=='0'&&arr[*end_x][*end_y+1]=='0')) *end_y=*end_y+1;
-        else if(arr[*end_x][*end_y+1]=='0') *end_y=*end_y+1;
-        else if(arr[*end_x][*end_y-1]=='0') *end_y=*end_y-1;
-        else if(arr[*end_x+1][*end_y]=='0') *end_x=*end_x+1;
-        else *end_x=*end_x-1;
+        if(arr[current->x][current->y-1]=='|')
+        {
+            struct body *tmp=tail;
+            arr[tail->x][tail->y]=' ';
+            while(tmp->next!=NULL)
+            {
+                tmp->x=tmp->next->x;
+                tmp->y=tmp->next->y;
+                tmp=tmp->next;
+            }
+            tmp->y=58;
+            arr[tmp->x][tmp->y]='0';
+        }
+        else
+        {
+            struct body *tmp=tail;
+            arr[tail->x][tail->y]=' ';
+            while(tmp->next!=NULL)
+            {
+                tmp->x=tmp->next->x;
+                tmp->y=tmp->next->y;
+                tmp=tmp->next;
+            }
+            tmp->y=tmp->y-1;
+            arr[tmp->x][tmp->y]='0';
+        }
         return 1;
     }
-    else
+    else            
     {
         return 0;
     }
 }
 
-int s(char arr[30][60],int *start_x,int *start_y,int *end_x,int *end_y,int *score,int *sp)
+int s(char arr[30][60],int *score,int *sp,struct body* tail)
 {
-    arr[*end_x][*end_y]=' ';
-    if(arr[*start_x+1][*start_y]=='x')
+    struct body *current=tail;
+    while(current->next!=NULL)
     {
-        arr[*start_x+1][*start_y]='0';
-        *start_x=*start_x+1;
+        current=current->next;
+    }
+    if(arr[current->x+1][current->y]=='x')
+    {
+        struct body *t=(struct body*)malloc(sizeof(struct body));
+        t->x=current->x+1;
+        t->y=current->y;
+        t->next=NULL;
+        current->next=t;
+        arr[t->x][t->y]='0';
         *score+=2*(*sp);
         int g1=generate(29);
         int g2=generate(59);
-        while(arr[g1][g2]=='0' || arr[g1][g2]=='|' || arr[g1][g2]=='-')
+        while(arr[g1][g2]=='0' || arr[g1][g2]=='*')
         {
             g1=generate(29);
             g2=generate(59);
@@ -219,34 +286,62 @@ int s(char arr[30][60],int *start_x,int *start_y,int *end_x,int *end_y,int *scor
         arr[g1][g2]='x';
         return 1;
     }
-    else if(arr[*start_x+1][*start_y]!='|' && arr[*start_x+1][*start_y]!='-' && arr[*start_x+1][*start_y]!='0')
+
+    else if(arr[current->x+1][current->y]!='*' && arr[current->x+1][current->y]!='0')
     {
-        arr[*start_x+1][*start_y]='0';
-        *start_x=*start_x+1;
-        if((arr[*end_x][*end_y-1]=='0'&& arr[*end_x-1][*end_y]=='0')||(arr[*end_x][*end_y+1]=='0'&&arr[*end_x-1][*end_y]=='0')) *end_x=*end_x-1;
-        else if(arr[*end_x][*end_y+1]=='0') *end_y=*end_y+1;
-        else if(arr[*end_x][*end_y-1]=='0') *end_y=*end_y-1;
-        else if(arr[*end_x+1][*end_y]=='0') *end_x=*end_x+1;
-        else *end_x=*end_x-1;
+        if(arr[current->x+1][current->y]=='-')
+        {
+            struct body *tmp=tail;
+            arr[tail->x][tail->y]=' ';
+            while(tmp->next!=NULL)
+            {
+                tmp->x=tmp->next->x;
+                tmp->y=tmp->next->y;
+                tmp=tmp->next;
+            }
+            tmp->x=1;
+            arr[tmp->x][tmp->y]='0';
+        }
+        else
+        {
+            struct body *tmp=tail;
+            arr[tail->x][tail->y]=' ';
+            while(tmp->next!=NULL)
+            {
+                tmp->x=tmp->next->x;
+                tmp->y=tmp->next->y;
+                tmp=tmp->next;
+            }
+            tmp->x=tmp->x+1;
+            arr[tmp->x][tmp->y]='0';
+        }
         return 1;
     }
-    else
+    else            
     {
         return 0;
     }
 }
 
-int d(char arr[30][60],int *start_x,int *start_y,int *end_x,int *end_y,int *score,int *sp)
+int d(char arr[30][60],int *score,int *sp,struct body* tail)
 {
-    arr[*end_x][*end_y]=' ';
-    if(arr[*start_x][*start_y+1]=='x')
+    struct body *current=tail;
+    while(current->next!=NULL)
     {
-        arr[*start_x][*start_y+1]='0';
-        *start_y=*start_y+1;
+        current=current->next;
+    }
+    if(arr[current->x][current->y+1]=='x')
+    {
+        struct body *t=(struct body*)malloc(sizeof(struct body));
+        t->x=current->x;
+        t->y=current->y+1;
+        t->next=NULL;
+        current->next=t;
+        arr[t->x][t->y]='0';
         *score+=2*(*sp);
         int g1=generate(29);
         int g2=generate(59);
-        while(arr[g1][g2]=='0' || arr[g1][g2]=='|' || arr[g1][g2]=='-')
+        while(arr[g1][g2]=='0' || arr[g1][g2]=='*')
         {
             g1=generate(29);
             g2=generate(59);
@@ -254,18 +349,39 @@ int d(char arr[30][60],int *start_x,int *start_y,int *end_x,int *end_y,int *scor
         arr[g1][g2]='x';
         return 1;
     }
-    else if(arr[*start_x][*start_y+1]!='|' && arr[*start_x-1][*start_y+1]!='-' && arr[*start_x][*start_y+1]!='0')
+
+    else if(arr[current->x][current->y+1]!='*' && arr[current->x][current->y+1]!='0')
     {
-        arr[*start_x][*start_y+1]='0';
-        *start_y=*start_y+1;
-        if((arr[*end_x][*end_y-1]=='0'&& arr[*end_x+1][*end_y]=='0')||(arr[*end_x][*end_y-1]=='0'&&arr[*end_x-1][*end_y]=='0')) *end_y=*end_y-1;
-        else if(arr[*end_x][*end_y+1]=='0') *end_y=*end_y+1;
-        else if(arr[*end_x][*end_y-1]=='0') *end_y=*end_y-1;
-        else if(arr[*end_x+1][*end_y]=='0') *end_x=*end_x+1;
-        else *end_x=*end_x-1;
+        if(arr[current->x][current->y+1]=='|')
+        {
+            struct body *tmp=tail;
+            arr[tail->x][tail->y]=' ';
+            while(tmp->next!=NULL)
+            {
+                tmp->x=tmp->next->x;
+                tmp->y=tmp->next->y;
+                tmp=tmp->next;
+            }
+            tmp->y=1;
+            arr[tmp->x][tmp->y]='0';
+        }
+        else
+        {
+            struct body *tmp=tail;
+            arr[tail->x][tail->y]=' ';
+            while(tmp->next!=NULL)
+            {
+                tmp->x=tmp->next->x;
+                tmp->y=tmp->next->y;
+                tmp=tmp->next;
+            }
+            tmp->y=tmp->y+1;
+            arr[tmp->x][tmp->y]='0';
+        }
+
         return 1;
     }
-    else
+    else            
     {
         return 0;
     }
@@ -284,8 +400,9 @@ void print(char arr[30][60],int *score)
     printf("Score : %d\n",*score);
 }
 
-void play(char c,int *start_x,int *start_y,int *end_x,int *end_y,int *score,char arr[30][60],int *sp)
+void play(char c,int *score,char arr[30][60],int *sp,struct body* h)
 {
+    
     char temp=c;
     int cont=1;
     while(cont)
@@ -296,38 +413,38 @@ void play(char c,int *start_x,int *start_y,int *end_x,int *end_y,int *score,char
         }
         if(c=='w' && temp!='s' )
         {
-                cont=w(arr, start_x,start_y,end_x,end_y,score,sp);
+                cont=w(arr,score,sp,h);
         }
         else if(c=='s' && temp!='w')
         {
-                cont=s(arr, start_x,start_y,end_x,end_y,score,sp);
+                cont=s(arr,score,sp,h);
         }
         else if(c=='a' && temp!='d')
         {
-                cont=a(arr, start_x,start_y,end_x,end_y,score,sp);
+                cont=a(arr,score,sp,h);
         }
         else if(c=='d' && temp!='a')
         {
-                cont=d(arr, start_x,start_y,end_x,end_y,score,sp);
+                cont=d(arr,score,sp,h);
         }
 
         else
         {
             if(temp=='a')
             {
-                cont=a(arr, start_x,start_y,end_x,end_y,score,sp);
+                cont=a(arr,score,sp,h);
             }
             else if(temp=='d')
             {
-                cont=d(arr, start_x,start_y,end_x,end_y,score,sp);
+                cont=d(arr,score,sp,h);
             }
             else if(temp=='s')
             {
-                cont=s(arr, start_x,start_y,end_x,end_y,score,sp);
+                cont=s(arr,score,sp,h);
             }
             else if(temp=='w')
             {
-                cont=w(arr, start_x,start_y,end_x,end_y,score,sp);
+                cont=w(arr,score,sp,h);
             }
             else
             {
@@ -432,6 +549,10 @@ void speedchange(int *speed)
     }
     system("clear");
 }
+int highscore()
+{
+    return 0;
+}
 void help()
 {
     printf("This game contains several maps.\n Your aim should be to collect as many fruits as possible until the game is over.\n");
@@ -448,12 +569,15 @@ void help()
 }
 int main()
 {
-    int m=1;
-    int speed=2;
-    int i=0;
+    
+    int m=1, speed=2, i=0;
     char t='y';
     while(t=='y')
     {
+        struct body* tail=(struct body*)malloc(sizeof(struct body));
+        tail->x=15;
+        tail->y=30;
+        tail->next=NULL;
         char arr[30][60];
         if(i==0)
         {
@@ -486,19 +610,15 @@ int main()
         }
         arr[15][30]='0';
         int score=0;
-        int start_x=15;
-        int start_y=30;
-        int end_x=15;
-        int end_y=30;
         char c=' ';
         system("clear");
         if(ch=='1')
         {
             print(arr,&score);
-            play(c,&start_x,&start_y,&end_x,&end_y, &score,arr,&speed);
+            play(c,&score,arr,&speed,tail);
             system("clear");
             printf(YELLOW "GAME OVER... \n" RESET);
-            printf(YELLOW "Your Score is : %d\n\n" RESET,score); 
+            printf(YELLOW "Your Score is : %d\n" RESET,score); 
             usleep(3000000);
             system("clear");
         }
@@ -510,6 +630,10 @@ int main()
         {
             speedchange(&speed);
         }
+        else if(ch=='4')
+        {
+            highscore();
+        }
         else if(ch=='5')
         {
             help();
@@ -520,5 +644,14 @@ int main()
         }
         i++;
         system("clear");
+        struct body* temp=tail;
+        while(temp->next!=NULL)
+        {
+            struct body* t=temp;
+            t=temp;
+            temp=temp->next;
+            free(t);
+        }
+        free(temp);
     }  
 }
