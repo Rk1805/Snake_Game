@@ -65,12 +65,32 @@ void compartment(char arr[30][60])
             arr[i][j]='*';
         }
     }
-    for(int i=18;i<20;i++)
+    for(int i=21;i<23;i++)
     {
         for(int j=9;j<50;j++)
         {
             arr[i][j]='*';
         }
+    }
+    for(int i=1;i<7;i++)
+    {
+        arr[i][1]='*';
+        arr[i][58]='*';
+    }
+    for(int i=24;i<29;i++)
+    {
+        arr[i][1]='*';
+        arr[i][58]='*';
+    }
+    for(int j=2;j<9;j++)
+    {
+        arr[1][j]='*';
+        arr[28][j]='*';
+    }
+    for(int j=51;j<58;j++)
+    {
+        arr[1][j]='*';
+        arr[28][j]='*';
     }
 }
 
@@ -393,7 +413,18 @@ void print(char arr[30][60],int *score)
     {
         for(int j=0;j<60;j++)
         {
-            printf("%c",arr[i][j]);
+            if(arr[i][j]=='*')
+            {
+                printf(RED"%c"RESET,arr[i][j]);
+            }
+            else if(arr[i][j]=='0')
+            {
+                printf(YELLOW"%c"RESET,arr[i][j]);
+            }
+            else
+            {
+                printf("%c",arr[i][j]);
+            }
         }
         printf("\n");
     }
