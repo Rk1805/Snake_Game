@@ -431,7 +431,70 @@ void print(char arr[30][60],int *score)
     printf("Score : %d\n",*score);
 }
 
-void play(char c,int *score,char arr[30][60],int *sp,struct body* h)
+int update(int data[10][3],int *m,int *score)
+{
+    int count=0;
+    FILE *fptr;
+    if(*m==1)
+    {
+        for(int i=0;i<10;i++)
+        {
+            if(*score>data[i][0])
+            {
+                count=1;
+                for(int j=9;j>i+1;j--)
+                {
+                    data[j][0]=data[j-1][0];
+                }
+                data[i][0]=*score;
+                break;
+            }
+        }
+    }
+    else if(*m==2)
+    {
+        for(int i=0;i<10;i++)
+        {
+            if(*score>data[i][1])
+            {
+                count=1;
+                for(int j=9;j>i+1;j--)
+                {
+                    data[j][1]=data[j-1][1];
+                }
+                data[i][1]=*score;
+                break;
+            }
+        }
+
+    }
+    else if(*m==3)
+    {
+        for(int i=0;i<10;i++)
+        {
+            if(*score>data[i][2])
+            {
+                count=1;
+                for(int j=9;j>i+1;j--)
+                {
+                    data[j][2]=data[j-1][2];
+                }
+                data[i][2]=*score;
+                break;
+            }
+        }
+
+    }
+    fptr = fopen("snake_game.csv", "w");
+    for(int i=0;i<10;i++)
+    {
+        fprintf(fptr," %d %d %d\n",data[i][0],data[i][1],data[i][2]);
+    }
+    return count;
+
+}
+
+void play(char c,int *score,char arr[30][60],int *sp,struct body* h,int *m,int data[10][3])
 {
     
     char temp=c;
@@ -497,6 +560,17 @@ void play(char c,int *score,char arr[30][60],int *sp,struct body* h)
             temp=c;
         }
     }
+    system("clear");
+    if(update(data,m,score))
+    {
+        printf(YELLOW "High Score!\n" RESET);
+        printf(YELLOW "Your Score is : %d\n" RESET,*score); 
+    }
+    else{
+        printf(YELLOW "GAME OVER... \n" RESET);
+        printf(YELLOW "Your Score is : %d\n" RESET,*score);
+    } 
+    usleep(2500000);
 }
 void enter()
 {
@@ -580,9 +654,40 @@ void speedchange(int *speed)
     }
     system("clear");
 }
-int highscore()
+void highscore(int data[10][3],int *m)
 {
-    return 0;
+    char ch=' ';
+    while(ch!='b')
+    {
+        if(*m==1)
+        {
+            printf("High Scores in Classic Box:\n");
+            for(int i=0;i<10;i++)
+            {
+                printf("%d. %d\n",i+1,data[i][0]);
+            }
+            printf("Back : b\n");
+        }
+        else if(*m==2)
+        {
+            printf("High Scores in Compartment:\n");
+            for(int i=0;i<10;i++)
+            {
+                printf("%d. %d\n",i+1,data[i][1]);
+            }
+            printf("Back : b\n");
+        }
+        else if(*m==3)
+        {
+            printf("High Scores in Apartment:\n");
+            for(int i=0;i<10;i++)
+            {
+                printf("%d. %d\n",i+1,data[i][2]);
+            }
+            printf("Back : b\n");
+        }
+        ch=getchar();
+    }
 }
 void help()
 {
@@ -598,9 +703,18 @@ void help()
     printf("   ...press any key and enter to go back\n");
     char c=getchar();
 }
+
+
 int main()
 {
-    
+    int data[10][3];
+    FILE *fptr;
+    fptr = fopen("snake_game.csv", "r");
+    for(int i=0;i<10;i++)
+    {
+        fscanf(fptr,"%d%d%d",&data[i][0],&data[i][1],&data[i][2]);
+    }
+    fclose(fptr);
     int m=1, speed=2, i=0;
     char t='y';
     while(t=='y')
@@ -646,11 +760,7 @@ int main()
         if(ch=='1')
         {
             print(arr,&score);
-            play(c,&score,arr,&speed,tail);
-            system("clear");
-            printf(YELLOW "GAME OVER... \n" RESET);
-            printf(YELLOW "Your Score is : %d\n" RESET,score); 
-            usleep(3000000);
+            play(c,&score,arr,&speed,tail,&m,data);
             system("clear");
         }
         else if(ch=='2')
@@ -663,7 +773,7 @@ int main()
         }
         else if(ch=='4')
         {
-            highscore();
+            highscore(data,&m);
         }
         else if(ch=='5')
         {

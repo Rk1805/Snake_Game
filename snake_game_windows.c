@@ -3,9 +3,7 @@
 #include<time.h>
 #include<string.h>
 #include<unistd.h>
-#include<sys/time.h>
 #include<windows.h>
-#include<conio.h>
 #include<fcntl.h>
  
 struct body{
@@ -65,12 +63,32 @@ void compartment(char arr[30][60])
             arr[i][j]='*';
         }
     }
-    for(int i=18;i<20;i++)
+    for(int i=21;i<23;i++)
     {
         for(int j=9;j<50;j++)
         {
             arr[i][j]='*';
         }
+    }
+    for(int i=1;i<7;i++)
+    {
+        arr[i][1]='*';
+        arr[i][58]='*';
+    }
+    for(int i=24;i<29;i++)
+    {
+        arr[i][1]='*';
+        arr[i][58]='*';
+    }
+    for(int j=2;j<9;j++)
+    {
+        arr[1][j]='*';
+        arr[28][j]='*';
+    }
+    for(int j=51;j<58;j++)
+    {
+        arr[1][j]='*';
+        arr[28][j]='*';
     }
 }
 
@@ -106,20 +124,29 @@ int generate(int number)
     return (rand()%(number-1)+1);
 }
 
-int kbhit() {
-    DWORD n;
+
+int kbhit() 
+{
     HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
-    INPUT_RECORD irInputRecord;
-    DWORD dwEventsRead;
+    DWORD fdwSaveOldMode;
+    INPUT_RECORD irInBuf[128];
+    int count;
 
-    GetNumberOfConsoleInputEvents(hStdin, &n);
+    GetConsoleMode(hStdin, &fdwSaveOldMode);
+    SetConsoleMode(hStdin, fdwSaveOldMode & ~(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT));
+    
+    count = 0;
+    PeekConsoleInput(hStdin, irInBuf, 128, &count);
+    for (int i = 0; i < count; i++) {
+        if (irInBuf[i].EventType == KEY_EVENT && irInBuf[i].Event.KeyEvent.bKeyDown) {
+            ReadConsoleInput(hStdin, irInBuf, 128, &count);
+            SetConsoleMode(hStdin, fdwSaveOldMode);
+            return 1;
+        }
+    }
 
-    if (n == 0)
-        return 0;
-
-    PeekConsoleInput(hStdin, &irInputRecord, 1, &dwEventsRead);
-
-    return (irInputRecord.EventType == KEY_EVENT);
+    SetConsoleMode(hStdin, fdwSaveOldMode);
+    return 0;
 }
 
 int w(char arr[30][60],int *score,int *sp,struct body* tail)
@@ -381,14 +408,88 @@ void print(char arr[30][60],int *score)
     {
         for(int j=0;j<60;j++)
         {
-            printf("%c",arr[i][j]);
+            if(arr[i][j]=='*')
+            {
+                printf(RED"%c"RESET,arr[i][j]);
+            }
+            else if(arr[i][j]=='0')
+            {
+                printf(YELLOW"%c"RESET,arr[i][j]);
+            }
+            else
+            {
+                printf("%c",arr[i][j]);
+            }
         }
         printf("\n");
     }
     printf("Score : %d\n",*score);
 }
 
-void play(char c,int *score,char arr[30][60],int *sp,struct body* h)
+int update(int data[10][3],int *m,int *score)
+{
+    int count=0;
+    FILE *fptr;
+    if(*m==1)
+    {
+        for(int i=0;i<10;i++)
+        {
+            if(*score>data[i][0])
+            {
+                count=1;
+                for(int j=9;j>i+1;j--)
+                {
+                    data[j][0]=data[j-1][0];
+                }
+                data[i][0]=*score;
+                break;
+            }
+        }
+    }
+    else if(*m==2)
+    {
+        for(int i=0;i<10;i++)
+        {
+            if(*score>data[i][1])
+            {
+                count=1;
+                for(int j=9;j>i+1;j--)
+                {
+                    data[j][1]=data[j-1][1];
+                }
+                data[i][1]=*score;
+                break;
+            }
+        }
+
+    }
+    else if(*m==3)
+    {
+        for(int i=0;i<10;i++)
+        {
+            if(*score>data[i][2])
+            {
+                count=1;
+                for(int j=9;j>i+1;j--)
+                {
+                    data[j][2]=data[j-1][2];
+                }
+                data[i][2]=*score;
+                break;
+            }
+        }
+
+    }
+    fptr = fopen("snake_game.csv", "w");
+    for(int i=0;i<10;i++)
+    {
+        fprintf(fptr," %d %d %d\n",data[i][0],data[i][1],data[i][2]);
+    }
+    return count;
+
+}
+
+void play(char c,int *score,char arr[30][60],int *sp,struct body* h,int *m,int data[10][3])
 {
     
     char temp=c;
@@ -397,7 +498,7 @@ void play(char c,int *score,char arr[30][60],int *sp,struct body* h)
     {
         if(kbhit())
         {
-            c=_getch();
+            c=getchar();
         }
         if(c=='w' && temp!='s' )
         {
@@ -447,17 +548,28 @@ void play(char c,int *score,char arr[30][60],int *sp,struct body* h)
         {
             usleep(300000/(*sp));
         }
-        system("cls");
+        system("clear");
         print(arr,score);
         if((c=='w'&&temp!='s')||(c=='a'&&temp!='d')||(c=='s'&&temp!='w')||(c=='d'&&temp!='a'))
         {
             temp=c;
         }
     }
+    system("clear");
+    if(update(data,m,score))
+    {
+        printf(YELLOW "High Score!\n" RESET);
+        printf(YELLOW "Your Score is : %d\n" RESET,*score); 
+    }
+    else{
+        printf(YELLOW "GAME OVER... \n" RESET);
+        printf(YELLOW "Your Score is : %d\n" RESET,*score);
+    } 
+    usleep(2500000);
 }
 void enter()
 {
-    system("cls");
+    system("clear");
     char arr[]="WELCOME TO THE GAME..";
     printf("\t\t\t\t");
     for(int i=0;i<strlen(arr);i++)
@@ -467,7 +579,7 @@ void enter()
         usleep(150000);
     }
     printf("\n");
-    system("cls");
+    system("clear");
 }
 void start()
 {
@@ -478,7 +590,7 @@ void map(char arr[30][60],int *m)
     char ch;
     while(1)
     {
-        system("cls");
+        system("clear");
         if(*m==1)
         {
             printf("1. Classic Box\n2. Compartment\n3. Apartment\n4. Back\n\ncurrent map: Classic Box\n");
@@ -530,16 +642,47 @@ void speedchange(int *speed)
         }
         else if(c=='b')
         {
-            system("cls");
+            system("clear");
             break;
         }
-        system("cls");
+        system("clear");
     }
-    system("cls");
+    system("clear");
 }
-int highscore()
+void highscore(int data[10][3],int *m)
 {
-    return 0;
+    char ch=' ';
+    while(ch!='b')
+    {
+        if(*m==1)
+        {
+            printf("High Scores in Classic Box:\n");
+            for(int i=0;i<10;i++)
+            {
+                printf("%d. %d\n",i+1,data[i][0]);
+            }
+            printf("Back : b\n");
+        }
+        else if(*m==2)
+        {
+            printf("High Scores in Compartment:\n");
+            for(int i=0;i<10;i++)
+            {
+                printf("%d. %d\n",i+1,data[i][1]);
+            }
+            printf("Back : b\n");
+        }
+        else if(*m==3)
+        {
+            printf("High Scores in Apartment:\n");
+            for(int i=0;i<10;i++)
+            {
+                printf("%d. %d\n",i+1,data[i][2]);
+            }
+            printf("Back : b\n");
+        }
+        ch=getchar();
+    }
 }
 void help()
 {
@@ -555,9 +698,18 @@ void help()
     printf("   ...press any key and enter to go back\n");
     char c=getchar();
 }
+
+
 int main()
 {
-    
+    int data[10][3];
+    FILE *fptr;
+    fptr = fopen("snake_game.csv", "r");
+    for(int i=0;i<10;i++)
+    {
+        fscanf(fptr,"%d%d%d",&data[i][0],&data[i][1],&data[i][2]);
+    }
+    fclose(fptr);
     int m=1, speed=2, i=0;
     char t='y';
     while(t=='y')
@@ -599,16 +751,12 @@ int main()
         arr[15][30]='0';
         int score=0;
         char c=' ';
-        system("cls");
+        system("clear");
         if(ch=='1')
         {
             print(arr,&score);
-            play(c,&score,arr,&speed,tail);
-            system("cls");
-            printf(YELLOW "GAME OVER... \n" RESET);
-            printf(YELLOW "Your Score is : %d\n" RESET,score); 
-            usleep(3000000);
-            system("cls");
+            play(c,&score,arr,&speed,tail,&m,data);
+            system("clear");
         }
         else if(ch=='2')
         {
@@ -620,7 +768,7 @@ int main()
         }
         else if(ch=='4')
         {
-            highscore();
+            highscore(data,&m);
         }
         else if(ch=='5')
         {
@@ -631,7 +779,7 @@ int main()
             break;
         }
         i++;
-        system("cls");
+        system("clear");
         struct body* temp=tail;
         while(temp->next!=NULL)
         {
