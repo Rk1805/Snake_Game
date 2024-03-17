@@ -167,7 +167,7 @@ int w(char arr[30][60],int *score,int *sp,struct body* tail)
         *score+=2*(*sp);
         int g1=generate(29);
         int g2=generate(59);
-        while(arr[g1][g2]=='0' || arr[g1][g2]=='*')
+        while(arr[g1][g2]=='0' || arr[g1][g2]=='*' || arr[g1-1][g2])
         {
             g1=generate(29);
             g2=generate(59);
@@ -230,7 +230,7 @@ int a(char arr[30][60],int *score,int *sp,struct body* tail)
         *score+=2*(*sp);
         int g1=generate(29);
         int g2=generate(59);
-        while(arr[g1][g2]=='0' || arr[g1][g2]=='*')
+        while(arr[g1][g2]=='0' || arr[g1][g2]=='*' || arr[g1][g2+1])
         {
             g1=generate(29);
             g2=generate(59);
@@ -293,7 +293,7 @@ int s(char arr[30][60],int *score,int *sp,struct body* tail)
         *score+=2*(*sp);
         int g1=generate(29);
         int g2=generate(59);
-        while(arr[g1][g2]=='0' || arr[g1][g2]=='*')
+        while(arr[g1][g2]=='0' || arr[g1][g2]=='*' || arr[g1+1][g2])
         {
             g1=generate(29);
             g2=generate(59);
@@ -356,7 +356,7 @@ int d(char arr[30][60],int *score,int *sp,struct body* tail)
         *score+=2*(*sp);
         int g1=generate(29);
         int g2=generate(59);
-        while(arr[g1][g2]=='0' || arr[g1][g2]=='*')
+        while(arr[g1][g2]=='0' || arr[g1][g2]=='*' || arr[g1][g2-1]=='0')
         {
             g1=generate(29);
             g2=generate(59);
@@ -500,7 +500,21 @@ void play(char c,int *score,char arr[30][60],int *sp,struct body* h,int *m,int d
         {
             c=getchar();
         }
-        if(c=='w' && temp!='s' )
+        if(c=='x')
+        {
+            system("clear");
+            printf("Are you sure you want to quit\n y : Yes \t n : No");
+            char t=getchar();
+            if(t=='y')
+            {
+                break;
+            }
+            else
+            {
+                continue;
+            }
+        }
+        else if(c=='w' && temp!='s' )
         {
                 cont=w(arr,score,sp,h);
         }
@@ -548,14 +562,14 @@ void play(char c,int *score,char arr[30][60],int *sp,struct body* h,int *m,int d
         {
             usleep(300000/(*sp));
         }
-        system("clear");
+        system("cls");
         print(arr,score);
         if((c=='w'&&temp!='s')||(c=='a'&&temp!='d')||(c=='s'&&temp!='w')||(c=='d'&&temp!='a'))
         {
             temp=c;
         }
     }
-    system("clear");
+    system("cls");
     if(update(data,m,score))
     {
         printf(YELLOW "High Score!\n" RESET);
@@ -569,7 +583,7 @@ void play(char c,int *score,char arr[30][60],int *sp,struct body* h,int *m,int d
 }
 void enter()
 {
-    system("clear");
+    system("cls");
     char arr[]="WELCOME TO THE GAME..";
     printf("\t\t\t\t");
     for(int i=0;i<strlen(arr);i++)
@@ -579,7 +593,7 @@ void enter()
         usleep(150000);
     }
     printf("\n");
-    system("clear");
+    system("cls");
 }
 void start()
 {
@@ -590,7 +604,7 @@ void map(char arr[30][60],int *m)
     char ch;
     while(1)
     {
-        system("clear");
+        system("cls");
         if(*m==1)
         {
             printf("1. Classic Box\n2. Compartment\n3. Apartment\n4. Back\n\ncurrent map: Classic Box\n");
@@ -642,12 +656,12 @@ void speedchange(int *speed)
         }
         else if(c=='b')
         {
-            system("clear");
+            system("cls");
             break;
         }
-        system("clear");
+        system("cls");
     }
-    system("clear");
+    system("cls");
 }
 void highscore(int data[10][3],int *m)
 {
@@ -690,8 +704,8 @@ void help()
     printf("1. The movements of the snake is caused by pressing  the keys w,s,a,d\n");
     printf("2. Pressing any other key will not cause any change in motion\n");
     printf("3. When the snake is  moving, you cannot change the motion of the snake directly in the opposite direction.\n  You need to moving in either of the remianing direction and then move backwards\n");
-    printf("4. The snake should be moved with the  boundaries drawn.\n");
-    printf("5. The game gets over when the snake either hits its own body or it hits the boundary\n");
+    printf("4. If the snake goes at the white boundaries, it will come from opposite side and move in same direction.\n");
+    printf("5. The game gets over when the snake either hits its own body or it hits the red walls\n");
     printf("6. To eat the fruit, move over the fruit . The length of the snake gets increased by 1 unit.\n\n");
     printf("7. To change the map, go to the maps option. There are 3 maps available");
     printf("8. To increase the speed go to speed option and increase it or decrease it ");
@@ -751,12 +765,12 @@ int main()
         arr[15][30]='0';
         int score=0;
         char c=' ';
-        system("clear");
+        system("cls");
         if(ch=='1')
         {
             print(arr,&score);
             play(c,&score,arr,&speed,tail,&m,data);
-            system("clear");
+            system("cls");
         }
         else if(ch=='2')
         {
@@ -779,7 +793,7 @@ int main()
             break;
         }
         i++;
-        system("clear");
+        system("cls");
         struct body* temp=tail;
         while(temp->next!=NULL)
         {
