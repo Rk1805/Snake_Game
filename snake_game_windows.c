@@ -716,7 +716,7 @@ void help()
 
 int main()
 {
-    int data[10][3];
+    int data[10][3]={{0}};
     FILE *fptr;
     fptr = fopen("snake_game.csv", "r");
     for(int i=0;i<10;i++)
