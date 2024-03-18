@@ -361,7 +361,7 @@ int d(char arr[30][60],int *score,int *sp,struct body* tail)
         *score+=2*(*sp);
         int g1=generate(29);
         int g2=generate(59);
-        while(arr[g1][g2]=='0' || arr[g1][g2]=='*' || arr[g1][g2-1])
+        while(arr[g1][g2]=='0' || arr[g1][g2]=='*' || arr[g1][g2-1]=='0')
         {
             g1=generate(29);
             g2=generate(59);
@@ -721,7 +721,7 @@ void help()
 
 int main()
 {
-    int data[10][3];
+    int data[10][3]={{0}};
     FILE *fptr;
     fptr = fopen("snake_game.csv", "r");
     for(int i=0;i<10;i++)
