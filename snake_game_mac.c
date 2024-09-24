@@ -810,6 +810,6 @@ int main()
         free(temp);
     }
     cout<<"";
-    cour<<"branch";
+    cout<<"branch";
 }
 
